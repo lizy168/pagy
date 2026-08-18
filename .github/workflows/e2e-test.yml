@@ -1,75 +1,8 @@
-name: E2E Test
-
-on:
-  workflow_dispatch:
-  push:
-    branches: ['**']
-  pull_request:
-    branches: ['**']
-
-jobs:
-  skip_check:
-    name: Skip Check
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@v5.3.1
-        with:
-          concurrent_skipping: 'never'
-          skip_after_successful_duplicate: 'true'
-          paths: '[
-            ".github/workflows/e2e-test.yml",
-            "gem/**",
-            "e2e/**",
-            "Gemfile.lock",
-            "bun.lockb"
-            ]'
-          paths_ignore: '[
-            "gem/config/**",
-            "gem/locales/**",
-            "!gem/locales/en.yml",
-            "**/*.md"
-            ]'
-          do_not_skip: '["workflow_dispatch"]'
-
-  e2e_test:
-    needs: skip_check
-    if: ${{ needs.skip_check.outputs.should_skip != 'true' }}
-    name: E2E [${{ matrix.app }}] Test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        app: ['demo', 'repro', 'rails', 'calendar']
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.3'
-          bundler-cache: true
-      - name: Install bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - name: Install Dependencies
-        run: bun install --frozen-lockfile
-      - name: Setup Cypress Cache
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.cache/Cypress
-          key: ${{ runner.os }}-cypress-cache-${{ hashFiles('bun.lockb') }}
-      - name: Cypress [${{ matrix.app }}] Test
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: e2e
-          install: false
-          config: baseUrl=http://0.0.0.0:8080,video=false
-          start: bundle exec pagy ${{ matrix.app }} -p 8080 -i false
-          wait-on: http://0.0.0.0:8080
-          wait-on-timeout: 120
-          spec: cypress/e2e/${{ matrix.app }}.cy.ts
-          quiet: true
+--- a/.github/workflows/e2e-test.yml
++++ b/.github/workflows/e2e-test.yml
+@@ -72,4 +72,4 @@
+           wait-on: http://0.0.0.0:8080
+           wait-on-timeout: 120
+           spec: cypress/e2e/${{ matrix.app }}.cy.ts
+-          quiet: true
++          quiet: true
