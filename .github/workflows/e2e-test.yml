@@ -51,6 +51,8 @@ jobs:
         with:
           ruby-version: '3.3'
           bundler-cache: true
+      - name: Install Ruby Dependencies
+        run: bundle install
       - name: Install bun
         uses: oven-sh/setup-bun@v2
         with:
